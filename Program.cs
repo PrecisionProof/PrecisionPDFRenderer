@@ -27,7 +27,10 @@ namespace PDFRenderer
             char _fileType = args[5][0];
 
             PDFRenderHelper PDFRenderer = new PDFRenderHelper(_gsPath);
-            PDFRenderer.Render_(_gsPath, inputPath, outputPath, Array.ConvertAll(pages, int.Parse), resolution, _overprintPreview, _fileType == 'm');
+            foreach (string page in pages)
+            {
+                PDFRenderer.Render_(_gsPath, inputPath, outputPath, int.Parse(page), resolution, _overprintPreview, _fileType == 'm');
+            }
         }
     }
 
@@ -52,31 +55,30 @@ namespace PDFRenderer
         }
 
         // Render all pages
-        public bool RenderDocument(string inputPath, string outputPath, int resolution, bool overprint = false, bool is_master = true)
-        {
-            return Render_(this._path, inputPath, outputPath, new int[] { -1 }, resolution, overprint, is_master);
-        }
+        //public bool RenderDocument(string inputPath, string outputPath, int resolution, bool overprint = false, bool is_master = true)
+        //{
+        //    return Render_(this._path, inputPath, outputPath, new int[] { -1 }, resolution, overprint, is_master);
+        //}
 
         // Render specific page
         public bool RenderPage(string inputPath, string outputPath, int page, int resolution, bool overprint = false, bool is_master = true)
         {
-            return Render_(this._path, inputPath, outputPath, new int[] { page }, resolution, overprint, is_master);
+            return Render_(this._path, inputPath, outputPath, page , resolution, overprint, is_master);
         }
 
         // Render specific list os pages
-        public bool RenderPages(string inputPath, string outputPath, int[] pages, int resolution, bool overprint = false, bool is_master = true)
-        {
-            return Render_(this._path, inputPath, outputPath, pages, resolution, overprint, is_master);
-        }
+        //public bool RenderPages(string inputPath, string outputPath, int[] pages, int resolution, bool overprint = false, bool is_master = true)
+        //{
+        //    return Render_(this._path, inputPath, outputPath, pages, resolution, overprint, is_master);
+        //}
 
-        internal bool Render_(string gsPath, string inputPath, string outputPath, int[] pages, int resolution, bool overprint, bool is_master)
+        internal bool Render_(string gsPath, string inputPath, string outputPath, int page, int resolution, bool overprint, bool is_master)
         {
             // default configs
-            int pageNumber = pages[0]; // Render all pages: -1
+            int pageNumber = page; // Render all pages: -1
             string overprintText = "/disable";
-            string page = "";
-            string fileName = "%d";
             string fileType = is_master ? "m" : "s";
+            string pageCmd = string.Empty;
 
 
             // treat configs
@@ -90,15 +92,11 @@ namespace PDFRenderer
                 outputPath = Path.Combine(outputPath, "NOP");
             }
 
-            if (pages.Length > 1)
+            if (pageNumber != -1)
             {
-                page = string.Format(" -sPageList={0}", string.Join(",", pages));
+                pageCmd = string.Format(" -dFirstPage={0} -dLastPage={0}", pageNumber + 1);
             }
-            else if (pageNumber != -1)
-            {
-                page = string.Format(" -dFirstPage={0} -dLastPage={0}", pageNumber + 1);
-            }
-            fileName = fileType + fileName;
+            string fileName = fileType + page.ToString();
             outputPath = Path.Combine(outputPath, fileName);
 
             try
@@ -110,7 +108,7 @@ namespace PDFRenderer
                 ghostRender.StartInfo.RedirectStandardOutput = true;
                 ghostRender.StartInfo.RedirectStandardError = true;
                 ghostRender.StartInfo.CreateNoWindow = true;
-                ghostRender.StartInfo.Arguments = string.Format(_script_page, page, overprintText, outputPath, inputPath, resolution);
+                ghostRender.StartInfo.Arguments = string.Format(_script_page, pageCmd, overprintText, outputPath, inputPath, resolution);
                 ghostRender.Start();
                 ghostRender.BeginErrorReadLine();
                 string processOutput = ghostRender.StandardOutput.ReadToEnd();
