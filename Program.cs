@@ -38,6 +38,7 @@ namespace PDFRenderer
     {
         private string _script_page = "-dSAFER -dBATCH -dNOPROMPT -dQUIET -dNOPAUSE{0} -sDEVICE=png16m -dTextAlphaBits=4 -dGraphicsAlphaBits=4 -dOverprint={1} -r{4} -sOutputFile=\"{2}.png\" \"{3}\"";
         private string _script_separation = "-dSAFER -dBATCH -dNOPROMPT -dQUIET -dNOPAUSE{0} -sDEVICE=tiffsep -dTextAlphaBits=4 -dGraphicsAlphaBits=4 -dOverprint={1} -r{4} -sOutputFile=\"{2}.tiff\" \"{3}\"";
+        private string _script_ai2pdf = "-dSAFER -dBATCH -dNOPROMPT -dQUIET -dNOPAUSE -sDEVICE=pdfwrite -sOutputFile=\"{0}\" \"{1}\"";
         private string _script_help = "-h";
 
         private string _path;
@@ -54,23 +55,17 @@ namespace PDFRenderer
             this._path = gsPath;
         }
 
-        // Render all pages
-        //public bool RenderDocument(string inputPath, string outputPath, int resolution, bool overprint = false, bool is_master = true)
-        //{
-        //    return Render_(this._path, inputPath, outputPath, new int[] { -1 }, resolution, overprint, is_master);
-        //}
+        // Convert to Adobe Illustrator
+        public bool ConvertoAIToPDF(string inputPath, string outputPath)
+        {
+            return callGS(this._path, string.Format(_script_ai2pdf, outputPath, inputPath));
+        }
 
         // Render specific page
         public bool RenderPage(string inputPath, string outputPath, int page, int resolution, bool overprint = false, bool is_master = true)
         {
             return Render_(this._path, inputPath, outputPath, page , resolution, overprint, is_master);
         }
-
-        // Render specific list os pages
-        //public bool RenderPages(string inputPath, string outputPath, int[] pages, int resolution, bool overprint = false, bool is_master = true)
-        //{
-        //    return Render_(this._path, inputPath, outputPath, pages, resolution, overprint, is_master);
-        //}
 
         internal bool Render_(string gsPath, string inputPath, string outputPath, int page, int resolution, bool overprint, bool is_master)
         {
@@ -99,6 +94,11 @@ namespace PDFRenderer
             string fileName = fileType + page.ToString();
             outputPath = Path.Combine(outputPath, fileName);
 
+            return callGS(gsPath, string.Format(_script_page, pageCmd, overprintText, outputPath, inputPath, resolution));
+        }
+
+        internal bool callGS(string gsPath, string arguments)
+        {
             try
             {
                 // call GS
@@ -108,7 +108,7 @@ namespace PDFRenderer
                 ghostRender.StartInfo.RedirectStandardOutput = true;
                 ghostRender.StartInfo.RedirectStandardError = true;
                 ghostRender.StartInfo.CreateNoWindow = true;
-                ghostRender.StartInfo.Arguments = string.Format(_script_page, pageCmd, overprintText, outputPath, inputPath, resolution);
+                ghostRender.StartInfo.Arguments = arguments;
                 ghostRender.Start();
                 ghostRender.BeginErrorReadLine();
                 string processOutput = ghostRender.StandardOutput.ReadToEnd();
