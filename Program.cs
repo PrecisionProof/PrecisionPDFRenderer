@@ -26,48 +26,36 @@ namespace PDFRenderer
             bool _overprintPreview = args[4] == "1";
             char _fileType = args[5][0];
 
-            PDFRenderHelper PDFRenderer = new PDFRenderHelper(_gsPath);
             foreach (string page in pages)
             {
-                PDFRenderer.Render_(_gsPath, inputPath, outputPath, int.Parse(page), resolution, _overprintPreview, _fileType == 'm');
+                PDFRenderHelper.Render_(_gsPath, inputPath, outputPath, int.Parse(page), resolution, _overprintPreview, _fileType == 'm');
             }
         }
     }
 
-    public class PDFRenderHelper
+    public static class PDFRenderHelper
     {
-        private string _script_page = "-dSAFER -dBATCH -dNOPROMPT -dQUIET -dNOPAUSE{0} -sDEVICE=png16m -dTextAlphaBits=4 -dGraphicsAlphaBits=4 -dOverprint={1} -r{4} -sOutputFile=\"{2}.png\" \"{3}\"";
-        private string _script_separation = "-dSAFER -dBATCH -dNOPROMPT -dQUIET -dNOPAUSE{0} -sDEVICE=tiffsep -dTextAlphaBits=4 -dGraphicsAlphaBits=4 -dOverprint={1} -r{4} -sOutputFile=\"{2}.tiff\" \"{3}\"";
-        private string _script_ai2pdf = "-dSAFER -dBATCH -dNOPROMPT -dQUIET -dNOPAUSE -sDEVICE=pdfwrite -sOutputFile=\"{0}\" \"{1}\"";
-        private string _script_help = "-h";
+        private static string _script_page = "-dSAFER -dBATCH -dNOPROMPT -dQUIET -dNOPAUSE{0} -sDEVICE=png16m -dTextAlphaBits=4 -dGraphicsAlphaBits=4 -dOverprint={1} -r{4} -sOutputFile=\"{2}.png\" \"{3}\"";
+        private static string _script_separation = "-dSAFER -dBATCH -dNOPROMPT -dQUIET -dNOPAUSE{0} -sDEVICE=tiffsep -dTextAlphaBits=4 -dGraphicsAlphaBits=4 -dOverprint={1} -r{4} -sOutputFile=\"{2}.tiff\" \"{3}\"";
+        private static string _script_ai2pdf = "-dSAFER -dBATCH -dNOPROMPT -dQUIET -dNOPAUSE -sDEVICE=pdfwrite -sOutputFile=\"{0}\" \"{1}\"";
+        private static string _script_help = "-h";
 
-        private string _path;
-        public string path 
-        { 
-            get 
-            { 
-                return _path; 
-            }
-        }
+        private static string _path;
 
-        public PDFRenderHelper(string gsPath)
-        {
-            this._path = gsPath;
-        }
 
         // Convert to Adobe Illustrator
-        public bool ConvertoAIToPDF(string inputPath, string outputPath)
+        public static bool ConvertoAIToPDF(string gsPath, string inputPath, string outputPath)
         {
-            return callGS(this._path, string.Format(_script_ai2pdf, outputPath, inputPath));
+            return callGS(gsPath, string.Format(_script_ai2pdf, outputPath, inputPath));
         }
 
         // Render specific page
-        public bool RenderPage(string inputPath, string outputPath, int page, int resolution, bool overprint = false, bool is_master = true)
+        public static bool RenderPage(string gsPath, string inputPath, string outputPath, int page, int resolution, bool overprint = false, bool is_master = true)
         {
-            return Render_(this._path, inputPath, outputPath, page , resolution, overprint, is_master);
+            return Render_(gsPath, inputPath, outputPath, page , resolution, overprint, is_master);
         }
 
-        internal bool Render_(string gsPath, string inputPath, string outputPath, int page, int resolution, bool overprint, bool is_master)
+        internal static bool Render_(string gsPath, string inputPath, string outputPath, int page, int resolution, bool overprint, bool is_master)
         {
             // default configs
             int pageNumber = page; // Render all pages: -1
@@ -97,7 +85,7 @@ namespace PDFRenderer
             return callGS(gsPath, string.Format(_script_page, pageCmd, overprintText, outputPath, inputPath, resolution));
         }
 
-        internal bool callGS(string gsPath, string arguments)
+        internal static bool callGS(string gsPath, string arguments)
         {
             try
             {
