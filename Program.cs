@@ -36,7 +36,7 @@ namespace PDFRenderer
     public static class PDFRenderHelper
     {
         private static string _script_page = "-dSAFER -dBATCH -dNOPROMPT -dQUIET -dNOPAUSE{0} -sDEVICE=png16m -dTextAlphaBits=4 -dGraphicsAlphaBits=4 -dOverprint={1} -r{4} -sOutputFile=\"{2}.png\" \"{3}\"";
-        private static string _script_separation = "-dSAFER -dBATCH -dNOPROMPT -dQUIET -dNOPAUSE{0} -sDEVICE=tiffsep -dTextAlphaBits=4 -dGraphicsAlphaBits=4 -dOverprint={1} -r{4} -sOutputFile=\"{2}.tiff\" \"{3}\"";
+        private static string _script_separation = "-dSAFER -dBATCH -dNOPROMPT -dQUIET -dNOPAUSE{0} -sDEVICE=tiffsep -dTextAlphaBits=4 -dGraphicsAlphaBits=4 -dOverprint={1} -r{4} -sOutputFile=\"{2}.png\" \"{3}\"";
         private static string _script_ai2pdf = "-dSAFER -dBATCH -dNOPROMPT -dQUIET -dNOPAUSE -sDEVICE=pdfwrite -sOutputFile=\"{0}\" \"{1}\"";
         private static string _script_help = "-h";
 
@@ -82,7 +82,7 @@ namespace PDFRenderer
             string fileName = fileType + page.ToString();
             outputPath = Path.Combine(outputPath, fileName);
 
-            return callGS(gsPath, string.Format(_script_page, pageCmd, overprintText, outputPath, inputPath, resolution));
+            return callGS(gsPath, string.Format(_script_separation, pageCmd, overprintText, outputPath, inputPath, resolution));
         }
 
         internal static bool callGS(string gsPath, string arguments)
